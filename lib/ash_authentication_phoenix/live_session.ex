@@ -190,7 +190,14 @@ defmodule AshAuthentication.Phoenix.LiveSession do
     context = session["context"] || %{}
     scope_module = session["scope"]
     default_scope_subject = session["default_scope"]
-    opts = [tenant: tenant, context: context]
+
+    scope_actor =
+      case socket.assigns do
+        %{current_scope: %{actor: actor}} -> actor
+        _ -> nil
+      end
+
+    opts = [tenant: tenant, context: context, actor: scope_actor]
 
     otp_app =
       socket
