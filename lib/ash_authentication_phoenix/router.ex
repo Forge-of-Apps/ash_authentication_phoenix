@@ -315,6 +315,8 @@ defmodule AshAuthentication.Phoenix.Router do
     {gettext_fn, opts} = Keyword.pop(opts, :gettext_fn)
     {gettext_backend, opts} = Keyword.pop(opts, :gettext_backend)
     {on_mount_prepend, opts} = Keyword.pop(opts, :on_mount_prepend)
+    {scope, opts} = Keyword.pop(opts, :scope)
+    {default_scope, opts} = Keyword.pop(opts, :default_scope)
 
     {overrides, opts} =
       Keyword.pop(opts, :overrides, [AshAuthentication.Phoenix.Overrides.Default])
@@ -390,7 +392,9 @@ defmodule AshAuthentication.Phoenix.Router do
                  "path" => sign_in_path,
                  "reset_path" => reset_path,
                  "register_path" => register_path,
-                 "gettext_fn" => unquote(gettext_fn)
+                 "gettext_fn" => unquote(gettext_fn),
+                 "scope" => unquote(scope),
+                 "default_scope" => unquote(default_scope) && to_string(unquote(default_scope))
                }
              ]},
           on_mount: on_mount
@@ -473,6 +477,8 @@ defmodule AshAuthentication.Phoenix.Router do
     {layout, opts} = Keyword.pop(opts, :layout)
     {on_mount, opts} = Keyword.pop(opts, :on_mount)
     {on_mount_prepend, opts} = Keyword.pop(opts, :on_mount_prepend)
+    {scope, opts} = Keyword.pop(opts, :scope)
+    {default_scope, opts} = Keyword.pop(opts, :default_scope)
     {gettext_fn, opts} = Keyword.pop(opts, :gettext_fn)
     {gettext_backend, opts} = Keyword.pop(opts, :gettext_backend)
 
@@ -511,7 +517,9 @@ defmodule AshAuthentication.Phoenix.Router do
                  "overrides" => unquote(overrides),
                  "otp_app" => unquote(otp_app),
                  "sign_out_path" => sign_out_path,
-                 "gettext_fn" => unquote(gettext_fn)
+                 "gettext_fn" => unquote(gettext_fn),
+                 "scope" => unquote(scope),
+                 "default_scope" => unquote(default_scope) && to_string(unquote(default_scope))
                }
              ]},
           on_mount: on_mount
@@ -588,6 +596,8 @@ defmodule AshAuthentication.Phoenix.Router do
     {layout, opts} = Keyword.pop(opts, :layout)
     {on_mount, opts} = Keyword.pop(opts, :on_mount)
     {on_mount_prepend, opts} = Keyword.pop(opts, :on_mount_prepend)
+    {scope, opts} = Keyword.pop(opts, :scope)
+    {default_scope, opts} = Keyword.pop(opts, :default_scope)
     {auth_routes_prefix, opts} = Keyword.pop(opts, :auth_routes_prefix)
     {gettext_fn, opts} = Keyword.pop(opts, :gettext_fn)
     {gettext_backend, opts} = Keyword.pop(opts, :gettext_backend)
@@ -634,7 +644,9 @@ defmodule AshAuthentication.Phoenix.Router do
                  "overrides" => unquote(overrides),
                  "gettext_fn" => unquote(gettext_fn),
                  "otp_app" => unquote(otp_app),
-                 "resources" => unquote(resources)
+                 "resources" => unquote(resources),
+                 "scope" => unquote(scope),
+                 "default_scope" => unquote(default_scope) && to_string(unquote(default_scope))
                }
              ]},
           on_mount: on_mount
@@ -1438,6 +1450,8 @@ defmodule AshAuthentication.Phoenix.Router do
     {layout, opts} = Keyword.pop(opts, :layout)
     {on_mount, opts} = Keyword.pop(opts, :on_mount)
     {on_mount_prepend, opts} = Keyword.pop(opts, :on_mount_prepend)
+    {scope, opts} = Keyword.pop(opts, :scope)
+    {default_scope, opts} = Keyword.pop(opts, :default_scope)
     {auth_routes_prefix, opts} = Keyword.pop(opts, :auth_routes_prefix)
     {gettext_fn, opts} = Keyword.pop(opts, :gettext_fn)
     {gettext_backend, opts} = Keyword.pop(opts, :gettext_backend)
@@ -1484,7 +1498,9 @@ defmodule AshAuthentication.Phoenix.Router do
                  "gettext_fn" => unquote(gettext_fn),
                  "resource" => unquote(resource),
                  "strategy" => unquote(strategy),
-                 "otp_app" => unquote(otp_app)
+                 "otp_app" => unquote(otp_app),
+                 "scope" => unquote(scope),
+                 "default_scope" => unquote(default_scope) && to_string(unquote(default_scope))
                }
              ]},
           on_mount: on_mount
@@ -1562,6 +1578,8 @@ defmodule AshAuthentication.Phoenix.Router do
     {layout, opts} = Keyword.pop(opts, :layout)
     {on_mount, opts} = Keyword.pop(opts, :on_mount)
     {on_mount_prepend, opts} = Keyword.pop(opts, :on_mount_prepend)
+    {scope, opts} = Keyword.pop(opts, :scope)
+    {default_scope, opts} = Keyword.pop(opts, :default_scope)
     {auth_routes_prefix, opts} = Keyword.pop(opts, :auth_routes_prefix)
     {gettext_fn, opts} = Keyword.pop(opts, :gettext_fn)
     {gettext_backend, opts} = Keyword.pop(opts, :gettext_backend)
@@ -1608,7 +1626,9 @@ defmodule AshAuthentication.Phoenix.Router do
                  "gettext_fn" => unquote(gettext_fn),
                  "resource" => unquote(resource),
                  "strategy" => unquote(strategy),
-                 "otp_app" => unquote(otp_app)
+                 "otp_app" => unquote(otp_app),
+                 "scope" => unquote(scope),
+                 "default_scope" => unquote(default_scope) && to_string(unquote(default_scope))
                }
              ]},
           on_mount: on_mount
@@ -1640,7 +1660,7 @@ defmodule AshAuthentication.Phoenix.Router do
   def generate_session(conn, session) do
     session
     |> Map.put("tenant", Ash.PlugHelpers.get_tenant(conn))
-    |> Map.put("context", Ash.PlugHelpers.get_context(conn))
+    |> Map.put("context", AshAuthentication.Phoenix.LiveSession.context_with_actor(conn))
   end
 
   # Expands option aliases as if inside a function so they become runtime

@@ -193,8 +193,8 @@ defmodule AshAuthentication.Phoenix.LiveSession do
 
     scope_actor =
       case socket.assigns do
-        %{current_scope: %{actor: actor}} -> actor
-        _ -> nil
+        %{current_scope: %{actor: actor}} when not is_nil(actor) -> actor
+        _ -> context[:private][:actor]
       end
 
     opts = [tenant: tenant, context: context, actor: scope_actor]
@@ -238,25 +238,30 @@ defmodule AshAuthentication.Phoenix.LiveSession do
             {:cont, assign_new(socket, current_subject_name, fn -> nil end)}
         end
     end)
-    |> maybe_assign_scopes(otp_app, scope_module, tenant, default_scope_subject)
+    |> maybe_assign_scopes(otp_app, scope_module, tenant, default_scope_subject, scope_actor)
     |> then(&{:cont, &1})
   end
 
-  defp maybe_assign_scopes(socket, _otp_app, nil, _tenant, _default_scope_subject), do: socket
+  defp maybe_assign_scopes(socket, _otp_app, nil, _tenant, _default_scope_subject, _ambient),
+    do: socket
 
-  defp maybe_assign_scopes(socket, otp_app, scope_module, tenant, default_scope_subject) do
+  defp maybe_assign_scopes(socket, otp_app, scope_module, tenant, default_scope_subject, ambient) do
     otp_app
     |> AshAuthentication.authenticated_resources()
-    |> Enum.reduce(socket, &assign_scope(&2, &1, scope_module, tenant, default_scope_subject))
+    |> Enum.reduce(
+      socket,
+      &assign_scope(&2, &1, scope_module, tenant, default_scope_subject, ambient)
+    )
   end
 
   # sobelow_skip ["DOS.StringToAtom"]
-  defp assign_scope(socket, resource, scope_module, tenant, default_scope_subject) do
+  defp assign_scope(socket, resource, scope_module, tenant, default_scope_subject, ambient) do
     subject_name = to_string(Info.authentication_subject_name!(resource))
     current_subject_name = String.to_atom("current_#{subject_name}")
     scope_name = String.to_atom("current_#{subject_name}_scope")
 
-    scope = struct(scope_module, %{actor: socket.assigns[current_subject_name], tenant: tenant})
+    actor = socket.assigns[current_subject_name] || ambient
+    scope = struct(scope_module, %{actor: actor, tenant: tenant})
     socket = assign_new(socket, scope_name, fn -> scope end)
 
     if default_scope_subject == subject_name do
@@ -294,7 +299,7 @@ defmodule AshAuthentication.Phoenix.LiveSession do
         Map.merge(acc, apply(m, f, [conn | a]) || %{})
       end)
       |> Map.put("tenant", Ash.PlugHelpers.get_tenant(conn))
-      |> Map.put("context", Ash.PlugHelpers.get_context(conn))
+      |> Map.put("context", context_with_actor(conn))
       |> then(&if scope_module, do: Map.put(&1, "scope", scope_module), else: &1)
       |> then(
         &if default_scope_subject,
@@ -308,6 +313,25 @@ defmodule AshAuthentication.Phoenix.LiveSession do
     |> Enum.reduce(acc, fn {subject_name, resource}, session ->
       put_subject_session(session, conn, subject_name, resource)
     end)
+  end
+
+  @doc """
+  The conn's Ash context with the conn's ambient actor merged in.
+
+  An actor set via `Ash.PlugHelpers.set_actor/2` (e.g. an application's
+  anonymous/guest actor) is forwarded inside the context using the
+  `private.actor` slot that Ash itself stores actors in, so it survives
+  into live sessions.
+  """
+  def context_with_actor(conn) do
+    case Ash.PlugHelpers.get_actor(conn) do
+      nil ->
+        Ash.PlugHelpers.get_context(conn)
+
+      actor ->
+        (Ash.PlugHelpers.get_context(conn) || %{})
+        |> Map.update(:private, %{actor: actor}, &Map.put_new(&1, :actor, actor))
+    end
   end
 
   defp put_subject_session(session, conn, subject_name, resource) do
