@@ -46,6 +46,7 @@ defmodule AshAuthentication.Phoenix.Components.MagicLink.SignIn do
       |> assign_new(:gettext_fn, fn -> nil end)
       |> assign_new(:current_tenant, fn -> nil end)
       |> assign_new(:auth_routes_prefix, fn -> nil end)
+      |> assign_new(:context, fn -> %{} end)
 
     {:ok, socket}
   end
@@ -69,6 +70,7 @@ defmodule AshAuthentication.Phoenix.Components.MagicLink.SignIn do
           module={Components.MagicLink.Form}
           auth_routes_prefix={@auth_routes_prefix}
           current_tenant={@current_tenant}
+          context={@context}
           strategy={@strategy}
           token={@token}
           id={"#{Info.authentication_subject_name!(@strategy.resource)}-#{@strategy.name}-sign-in-form"}
