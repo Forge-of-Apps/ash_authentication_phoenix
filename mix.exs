@@ -6,7 +6,7 @@ defmodule AshAuthentication.Phoenix.MixProject do
   @moduledoc false
   use Mix.Project
 
-  @version "3.0.0-rc.9"
+  @version "3.0.0-rc.11"
 
   def project do
     [
@@ -36,7 +36,8 @@ defmodule AshAuthentication.Phoenix.MixProject do
             {"documentation/tutorials/recovery-codes.md", title: "Recovery Codes"},
             {"documentation/tutorials/webauthn.md", title: "WebAuthn / Passkeys"},
             {"documentation/tutorials/webauthn-2fa.md", title: "Passkeys as 2FA"},
-            {"documentation/topics/scopes.md", title: "Scopes"}
+            {"documentation/topics/scopes.md", title: "Scopes"},
+            {"documentation/topics/multitenancy.md", title: "Multitenancy"}
           ],
           redirects: %{
             "getting-started-with-ash-authentication-phoenix" => "get-started"
@@ -134,7 +135,7 @@ defmodule AshAuthentication.Phoenix.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ash_authentication, "~> 5.0.0-rc.12"},
+      {:ash_authentication, "~> 5.0.0-rc.14"},
       {:wax_, "~> 0.7"},
       {:ash_phoenix, "~> 2.3 and >= 2.3.11"},
       {:ash, "~> 3.26"},
@@ -149,7 +150,7 @@ defmodule AshAuthentication.Phoenix.MixProject do
       {:slugify, "~> 1.3"},
       {:gettext, "~> 0.26 or ~> 1.0", optional: true},
       {:eqrcode, "~> 0.1", optional: true},
-      {:igniter, "~> 0.5 and >= 0.5.25", optional: true},
+      {:igniter, "~> 0.5 and >= 0.8.3", optional: true},
       {:igniter_js, "~> 0.4", optional: true},
       {:rustler, ">= 0.0.0", optional: true, runtime: false},
       {:bandit, "~> 1.0", only: [:dev, :test]},
@@ -161,7 +162,6 @@ defmodule AshAuthentication.Phoenix.MixProject do
       {:git_ops, "~> 2.4", only: [:dev, :test], runtime: false},
       {:makeup_html, ">= 0.0.0", only: :dev, runtime: false},
       {:mimic, "~> 2.1", only: [:dev, :test]},
-      {:mix_audit, "~> 2.1", only: [:dev, :test]},
       {:sobelow, "~> 0.13", only: [:dev, :test]},
       {:floki, ">= 0.30.0", only: :test}
     ]
