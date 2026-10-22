@@ -207,6 +207,7 @@ defmodule AshAuthentication.Phoenix.Components.Otp.RequestForm do
         "#{subject_name}-#{Strategy.name(strategy)}-#{strategy.request_action_name}"
         |> slugify(),
       tenant: assigns[:current_tenant],
+      actor: context[:private][:actor],
       transform_errors: _transform_errors(),
       context:
         Ash.Helpers.deep_merge_maps(context, %{

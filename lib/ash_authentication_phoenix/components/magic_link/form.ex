@@ -84,7 +84,11 @@ defmodule AshAuthentication.Phoenix.Components.MagicLink.Form do
         id:
           "#{subject_name}-#{Strategy.name(strategy)}-#{strategy.sign_in_action_name}"
           |> slugify(),
-        context: %{strategy: strategy, private: %{ash_authentication?: true}}
+        context:
+          Ash.Helpers.deep_merge_maps(socket.assigns[:context] || %{}, %{
+            strategy: strategy,
+            private: %{ash_authentication?: true}
+          })
       )
 
     socket = assign(socket, form: form)

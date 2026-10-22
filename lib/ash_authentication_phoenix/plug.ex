@@ -199,7 +199,10 @@ defmodule AshAuthentication.Phoenix.Plug do
     scope_module = Keyword.fetch!(opts, :scope)
     subject_name = Keyword.get(opts, :subject, :user)
 
-    actor = conn.assigns[String.to_existing_atom("current_#{subject_name}")]
+    actor =
+      conn.assigns[String.to_existing_atom("current_#{subject_name}")] ||
+        Ash.PlugHelpers.get_actor(conn)
+
     tenant = Ash.PlugHelpers.get_tenant(conn)
     scope = struct(scope_module, %{actor: actor, tenant: tenant})
 

@@ -21,13 +21,15 @@ defmodule AshAuthentication.Phoenix.RouterTest do
               [
                 %{
                   "auth_routes_prefix" => "/auth",
+                  "default_scope" => nil,
                   "otp_app" => nil,
                   "overrides" => [AshAuthentication.Phoenix.Overrides.Default],
                   "path" => "/sign-in",
                   "register_path" => "/register",
                   "reset_path" => "/reset",
                   "gettext_fn" => nil,
-                  "resources" => nil
+                  "resources" => nil,
+                  "scope" => nil
                 }
               ]}
   end
@@ -89,13 +91,15 @@ defmodule AshAuthentication.Phoenix.RouterTest do
               [
                 %{
                   "auth_routes_prefix" => "/nested/auth",
+                  "default_scope" => nil,
                   "otp_app" => nil,
                   "overrides" => [AshAuthentication.Phoenix.Overrides.Default],
                   "path" => "/nested/sign-in",
                   "register_path" => "/nested/register",
                   "reset_path" => "/nested/reset",
                   "gettext_fn" => nil,
-                  "resources" => nil
+                  "resources" => nil,
+                  "scope" => nil
                 }
               ]}
 
@@ -119,13 +123,15 @@ defmodule AshAuthentication.Phoenix.RouterTest do
               [
                 %{
                   "auth_routes_prefix" => "/auth",
+                  "default_scope" => nil,
                   "otp_app" => nil,
                   "overrides" => [AshAuthentication.Phoenix.Overrides.Default],
                   "path" => "/unscoped/sign-in",
                   "register_path" => "/register",
                   "reset_path" => "/reset",
                   "gettext_fn" => nil,
-                  "resources" => nil
+                  "resources" => nil,
+                  "scope" => nil
                 }
               ]}
   end
