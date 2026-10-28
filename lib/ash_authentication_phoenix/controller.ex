@@ -99,10 +99,10 @@ defmodule AshAuthentication.Phoenix.Controller do
   """
 
   alias AshAuthentication.Jwt
+  alias AshAuthentication.Phoenix.TokenRevocationNotifier
   alias AshAuthentication.Plug.Dispatcher
   alias AshAuthentication.Plug.Helpers
   alias AshAuthentication.Strategy.RememberMe
-  alias AshAuthentication.TokenResource.Info
   alias Plug.Conn
 
   @type t :: module
@@ -287,15 +287,14 @@ defmodule AshAuthentication.Phoenix.Controller do
   This ensures that the user can't use the application with revoked tokens.
   """
   def set_live_socket_id(conn, token) do
-    with {:ok, claims} <- Jwt.peek(token),
+    with {:ok, %{"jti" => jti}} <- Jwt.peek(token),
          otp_app <- conn.private.phoenix_endpoint.config(:otp_app),
          {:ok, resource} <- Jwt.token_to_resource(token, otp_app),
          {:ok, token_resource} <-
            AshAuthentication.Info.authentication_tokens_token_resource(resource),
-         {:ok, template_fn} <-
-           Info.token_live_socket_id_template(token_resource) do
+         {:ok, live_socket_id} <- TokenRevocationNotifier.live_socket_id(token_resource, jti) do
       conn
-      |> Plug.Conn.put_session(:live_socket_id, template_fn.(claims))
+      |> Plug.Conn.put_session(:live_socket_id, live_socket_id)
     else
       _ -> conn
     end
