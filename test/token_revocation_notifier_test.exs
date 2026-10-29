@@ -58,6 +58,28 @@ defmodule AshAuthentication.Phoenix.TokenRevocationNotifierTest do
     assert_receive %Phoenix.Socket.Broadcast{topic: "revoked:" <> ^subject, event: "disconnect"}
   end
 
+  test "templates using the documented atom jti key work in both phases", %{conn: conn} do
+    {:ok, token, %{"jti" => jti}} = Jwt.token_for_user(create_user!())
+
+    stub(Info, :token_live_socket_id_template, fn _ ->
+      {:ok, &"users_sessions:#{&1.jti}"}
+    end)
+
+    live_socket_id =
+      conn
+      |> Plug.Test.init_test_session(%{})
+      |> put_private(:phoenix_endpoint, @endpoint)
+      |> Controller.set_live_socket_id(token)
+      |> get_session(:live_socket_id)
+
+    assert live_socket_id == "users_sessions:#{jti}"
+
+    @endpoint.subscribe(live_socket_id)
+
+    :ok = TokenResource.Actions.revoke(Token, token)
+    assert_receive %Phoenix.Socket.Broadcast{topic: ^live_socket_id, event: "disconnect"}
+  end
+
   defp create_user! do
     strategy = AshAuthentication.Info.strategy!(Example.Accounts.User, :password)
 
