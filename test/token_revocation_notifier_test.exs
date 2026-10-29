@@ -8,8 +8,8 @@ defmodule AshAuthentication.Phoenix.TokenRevocationNotifierTest do
   use Mimic
 
   alias AshAuthentication.{Jwt, TokenResource}
-  alias AshAuthentication.TokenResource.Info
   alias AshAuthentication.Phoenix.Controller
+  alias AshAuthentication.TokenResource.Info
   alias Example.Accounts.Token
 
   test "sign-in and revocation use the same live socket id", %{conn: conn} do
