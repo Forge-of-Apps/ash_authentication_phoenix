@@ -99,10 +99,10 @@ defmodule AshAuthentication.Phoenix.Controller do
   """
 
   alias AshAuthentication.Jwt
-  alias AshAuthentication.Phoenix.TokenRevocationNotifier
   alias AshAuthentication.Plug.Dispatcher
   alias AshAuthentication.Plug.Helpers
   alias AshAuthentication.Strategy.RememberMe
+  alias AshAuthentication.TokenResource.Info
   alias Plug.Conn
 
   @type t :: module
@@ -292,10 +292,13 @@ defmodule AshAuthentication.Phoenix.Controller do
          {:ok, resource} <- Jwt.token_to_resource(token, otp_app),
          {:ok, token_resource} <-
            AshAuthentication.Info.authentication_tokens_token_resource(resource),
-         {:ok, live_socket_id} <-
-           TokenRevocationNotifier.live_socket_id(token_resource, claims) do
+         {:ok, template_fn} <-
+           Info.token_live_socket_id_template(token_resource) do
       conn
-      |> Plug.Conn.put_session(:live_socket_id, live_socket_id)
+      |> Plug.Conn.put_session(
+        :live_socket_id,
+        template_fn.(Map.put(claims, :jti, claims["jti"]))
+      )
     else
       _ -> conn
     end
