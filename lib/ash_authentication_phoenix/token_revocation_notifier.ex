@@ -26,8 +26,9 @@ defmodule AshAuthentication.Phoenix.TokenRevocationNotifier do
         end
       end
 
-  The template receives a map with the token's JTI under both `"jti"` and `:jti`,
-  so `&1["jti"]` and `fn %{jti: jti} -> ... end` are equivalent.
+  The template receives the JWT claims (on sign-in) or the token record fields
+  (on revocation), with the token's JTI always present under both `"jti"` and
+  `:jti`, so `&1["jti"]` and `fn %{jti: jti} -> ... end` are equivalent.
 
   Then in your auth controller, call `set_live_socket_id/2` on sign-in to set
   the socket ID in the session:
@@ -51,10 +52,10 @@ defmodule AshAuthentication.Phoenix.TokenRevocationNotifier do
       do: :ok
 
   def notify(%Ash.Notifier.Notification{
-        data: %{jti: jti},
+        data: %{jti: jti} = data,
         resource: token_resource
       }) do
-    with {:ok, socket_id} <- live_socket_id(token_resource, jti),
+    with {:ok, socket_id} <- live_socket_id(token_resource, jti, Map.delete(data, :__struct__)),
          {:ok, endpoints} when endpoints != [] <- Info.token_endpoints(token_resource) do
       Enum.each(endpoints, fn endpoint ->
         endpoint.broadcast(socket_id, "disconnect", %{})
@@ -65,9 +66,9 @@ defmodule AshAuthentication.Phoenix.TokenRevocationNotifier do
   end
 
   @doc false
-  @spec live_socket_id(Ash.Resource.t(), String.t()) :: {:ok, String.t()} | :error
-  def live_socket_id(token_resource, jti) do
+  @spec live_socket_id(Ash.Resource.t(), String.t(), map) :: {:ok, String.t()} | :error
+  def live_socket_id(token_resource, jti, fields) do
     with {:ok, template_fn} <- Info.token_live_socket_id_template(token_resource),
-         do: {:ok, template_fn.(%{"jti" => jti, jti: jti})}
+         do: {:ok, template_fn.(Map.merge(fields, %{"jti" => jti, jti: jti}))}
   end
 end
