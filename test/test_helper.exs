@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 Mimic.copy(Ash.Resource.Info)
+Mimic.copy(AshAuthentication.TokenResource.Info)
 
 ExUnit.start()
 
