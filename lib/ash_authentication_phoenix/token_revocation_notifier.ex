@@ -48,11 +48,13 @@ defmodule AshAuthentication.Phoenix.TokenRevocationNotifier do
       do: :ok
 
   def notify(%Ash.Notifier.Notification{
-        data: data,
+        data: %{jti: jti} = data,
         resource: token_resource
       }) do
+    fields = data |> Map.delete(:__struct__) |> Map.put("jti", jti)
+
     with {:ok, template_fn} <- Info.token_live_socket_id_template(token_resource),
-         socket_id <- template_fn.(Map.delete(data, :__struct__)),
+         socket_id <- template_fn.(fields),
          {:ok, endpoints} when endpoints != [] <- Info.token_endpoints(token_resource) do
       Enum.each(endpoints, fn endpoint ->
         endpoint.broadcast(socket_id, "disconnect", %{})
