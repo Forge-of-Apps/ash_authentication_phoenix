@@ -295,10 +295,7 @@ defmodule AshAuthentication.Phoenix.Controller do
          {:ok, template_fn} <-
            Info.token_live_socket_id_template(token_resource) do
       conn
-      |> Plug.Conn.put_session(
-        :live_socket_id,
-        template_fn.(Map.put(claims, :jti, claims["jti"]))
-      )
+      |> Plug.Conn.put_session(:live_socket_id, template_fn.(claims))
     else
       _ -> conn
     end
